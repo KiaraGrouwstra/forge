@@ -159,13 +159,15 @@ decodeAppServicesRuntimesContainer =
 
 type alias AppServicesRuntimesNixos =
     { enable : Bool
+    , imageVariants : List String
     }
 
 
 decodeAppServicesRuntimesNixos : Decoder AppServicesRuntimesNixos
 decodeAppServicesRuntimesNixos =
-    Decode.map AppServicesRuntimesNixos
+    Decode.map2 AppServicesRuntimesNixos
         (Decode.field "enable" Decode.bool)
+        (Decode.field "imageVariants" (Decode.list Decode.string))
 
 
 decodeAppContainer : Decoder AppServicesRuntimesContainer
@@ -176,8 +178,7 @@ decodeAppContainer =
 
 decodeAppNixos : Decoder AppServicesRuntimesNixos
 decodeAppNixos =
-    Decode.map AppServicesRuntimesNixos
-        (Decode.field "enable" Decode.bool)
+    decodeAppServicesRuntimesNixos
 
 
 type alias Ngi =
