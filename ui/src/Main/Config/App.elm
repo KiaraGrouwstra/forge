@@ -170,17 +170,6 @@ decodeAppServicesRuntimesNixos =
         (Decode.field "imageVariants" (Decode.list Decode.string))
 
 
-decodeAppContainer : Decoder AppServicesRuntimesContainer
-decodeAppContainer =
-    Decode.map AppServicesRuntimesContainer
-        (Decode.field "enable" Decode.bool)
-
-
-decodeAppNixos : Decoder AppServicesRuntimesNixos
-decodeAppNixos =
-    decodeAppServicesRuntimesNixos
-
-
 type alias Ngi =
     { ngi_grants : NgiGrants
     }
