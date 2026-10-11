@@ -450,45 +450,17 @@ viewPageAppRunNixOS model pageApp =
 viewPageAppRunNixOSBuildImage : Model -> PageApp -> Html Update
 viewPageAppRunNixOSBuildImage model pageApp =
     let
-        preferences =
-            model.model_preferences
-
-        imageVariants =
-            pageApp.pageApp_app.app_services.appServices_runtimes.appServicesRuntimes_nixos.imageVariants
-
-        -- Use the last selected variant if this application supports it.
-        imageVariant =
-            if List.member preferences.preferences_imageVariant imageVariants then
-                preferences.preferences_imageVariant
-
-            else
-                List.head imageVariants |> Maybe.withDefault preferences.preferences_imageVariant
-
         imageOutput =
             String.concat
                 [ pageApp.pageApp_app.app_outputName
                 , ".images."
-                , imageVariant
+                , selectedImageVariant model pageApp
                 ]
     in
     details [ attribute "data-testid" "run-nixos-build-image" ]
         [ summary [] [ text "Build disk images for deployment" ]
         , br [] []
-        , div [ class "d-flex align-items-center gap-2 mb-2" ]
-            [ label [ for "run-nixos-image-variant", class "text-nowrap" ] [ text "Image variant" ]
-            , select
-                [ id "run-nixos-image-variant"
-                , class "form-select form-select-sm w-auto"
-                , attribute "data-testid" "run-nixos-image-variant"
-                , onInput (\variant -> Update_SetPreferences { preferences | preferences_imageVariant = variant })
-                ]
-                (imageVariants
-                    |> List.map
-                        (\variant ->
-                            option [ value variant, selected (variant == imageVariant) ] [ text variant ]
-                        )
-                )
-            ]
+        , viewImageVariantSelect model pageApp "run-nixos-image-variant"
         , bashCodeBlock <|
             case model.model_preferences.preferences_install of
                 PreferencesInstall_NixFlakes ->
@@ -517,6 +489,49 @@ viewPageAppRunNixOSBuildImage model pageApp =
                     [ text "Learn more about image variants." ]
                 ]
             ]
+        ]
+
+
+selectedImageVariant : Model -> PageApp -> String
+selectedImageVariant model pageApp =
+    let
+        preferences =
+            model.model_preferences
+
+        imageVariants =
+            pageApp.pageApp_app.app_services.appServices_runtimes.appServicesRuntimes_nixos.imageVariants
+    in
+    -- Use the last selected variant if this application supports it.
+    if List.member preferences.preferences_imageVariant imageVariants then
+        preferences.preferences_imageVariant
+
+    else
+        List.head imageVariants |> Maybe.withDefault preferences.preferences_imageVariant
+
+
+viewImageVariantSelect : Model -> PageApp -> String -> Html Update
+viewImageVariantSelect model pageApp selectId =
+    let
+        preferences =
+            model.model_preferences
+
+        imageVariant =
+            selectedImageVariant model pageApp
+    in
+    div [ class "d-flex align-items-center gap-2 mb-2" ]
+        [ label [ for selectId, class "text-nowrap" ] [ text "Image variant" ]
+        , select
+            [ id selectId
+            , class "form-select form-select-sm w-auto"
+            , attribute "data-testid" selectId
+            , onInput (\variant -> Update_SetPreferences { preferences | preferences_imageVariant = variant })
+            ]
+            (pageApp.pageApp_app.app_services.appServices_runtimes.appServicesRuntimes_nixos.imageVariants
+                |> List.map
+                    (\variant ->
+                        option [ value variant, selected (variant == imageVariant) ] [ text variant ]
+                    )
+            )
         ]
 
 
