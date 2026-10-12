@@ -10,44 +10,41 @@
       pkgs,
       ...
     }:
-
-    let
-      # Some derivations aren't acutally real (e.g. the toplevel "apps" and "pkgs"),
-      # which we don't want to include in the checks.
-      isRealDrv = v: lib.isDerivation v && v ? drvPath;
-
-      filteredPackages = lib.filterAttrs (n: v: isRealDrv v) config.packages;
-
-      # Helper function to extract passthru attribute, ensuring it is a valid derivation
-      passthruAttr =
-        attr:
-        lib.filterAttrs (_: v: v != null) (
-          lib.mapAttrs' (
-            name: package:
-            if lib.hasAttr attr package && lib.isDerivation package.${attr} then
-              lib.nameValuePair "${name}-${attr}" package.${attr}
-            else
-              lib.nameValuePair name null
-          ) filteredPackages
-        );
-    in
-
     {
-      checks =
-        filteredPackages
-
-        # All packages passthru attributes
-        // (passthruAttr "env")
-        // (passthruAttr "test")
-
-        # All apps passthru attributes
-        // (passthruAttr "programs")
-        // (passthruAttr "container")
-        // (passthruAttr "vm")
-        // (passthruAttr "test")
-        // (passthruAttr "test-services-container")
-        // (passthruAttr "test-services-nixos")
-        // (passthruAttr "test-programs")
-        // (passthruAttr "check-programs-main-package");
+      checks = lib.concatMapAttrs (
+        packageName: package:
+        # `apps` and `pkgs` are package sets (to support the .#apps.${name} syntax)
+        # not actual package, hence filter them out (they do not have a `drvPath` attribute).
+        lib.optionalAttrs (lib.isDerivation package && lib.hasAttr "drvPath" package) (
+          let
+            subDrvs = [
+              # All packages passthru attributes
+              "env"
+              "test"
+              # All apps passthru attributes
+              "check-programs-main-package"
+              "container"
+              "program"
+              "test"
+              "test-programs"
+              "test-services-container"
+              "test-services-nixos"
+              "vm"
+            ];
+          in
+          lib.concatMapAttrs (
+            attrName: attr:
+            {
+              # Removing nested derivations so that `nix-eval-jobs --force-recurse`
+              # does not re-evaluate them.
+              # Explanation: https://github.com/ngi-nix/infra/issues/50#issuecomment-6114094518
+              ${packageName} = lib.removeAttrs package subDrvs;
+            }
+            // lib.optionalAttrs (lib.hasAttr attrName package && lib.isDerivation package.${attrName}) {
+              "${packageName}-${attrName}" = package.${attrName};
+            }
+          ) (lib.genAttrs subDrvs null)
+        )
+      ) config.packages;
     };
 }
