@@ -11,7 +11,47 @@ in
   pkgs.scion = {
     build.identityBuilder = {
       enable = true;
-      derivation = pkgs.pkgsOriginal.scion;
+      # Ship local topology tools adapted to run inside Nix shell environment
+      derivation = pkgs.pkgsOriginal.scion.overrideAttrs (previousAttrs: {
+        # Required by patchShebangs
+        buildInputs = previousAttrs.buildInputs or [ ] ++ [ pkgs.bash ];
+
+        postInstall = previousAttrs.postInstall + ''
+          mkdir --parents $out/share/scion/tools $out/share/scion/topology
+          cp topology/tiny4.topo $out/share/scion/topology/
+          cp --recursive \
+            tools/docker-ip \
+            tools/supervisor.sh \
+            tools/supervisord.conf \
+            tools/topogen.py \
+            tools/topology \
+            $out/share/scion/tools/
+
+          pushd $out/share/scion/tools
+
+          substituteInPlace topology/common.py \
+            --replace-fail "'tools/docker-ip'" "'$out/share/scion/tools/docker-ip'"
+
+          substituteInPlace topology/supervisor.py \
+            --replace-fail '"bin/daemon"' '"scion-daemon"' \
+            --replace-fail '"bin/dispatcher"' '"scion-dispatcher"' \
+            --replace-fail '"bin/control"' '"scion-control"' \
+            --replace-fail '"bin/router"' '"scion-router"'
+
+          patchShebangs --host docker-ip supervisor.sh
+
+          substituteInPlace supervisor.sh \
+            --replace-fail bin/supervisorctl supervisorctl \
+            --replace-fail bin/supervisord supervisord
+
+          # Disable wildcards plugin (currently unavailable on Nixpkgs)
+          substituteInPlace supervisord.conf \
+            --replace-fail '[ctlplugin:wildcards]' ';[ctlplugin:wildcards]' \
+            --replace-fail 'supervisor.ctl_factory = supervisorwildcards' ';supervisor.ctl_factory = supervisorwildcards' \
+            --replace-fail 'match_group = 1' ';match_group = 1'
+          popd
+        '';
+      });
     };
   };
 
@@ -249,50 +289,24 @@ in
             ]))
           ];
           text = ''
+            scion_share="${pkgs.scion}/share/scion"
+
+            export DOCKER_IF=lo              # to appease tools/docker-ip when docker is not available
+            export PYTHONDONTWRITEBYTECODE=1 # don't try to write .pyc files
+            export PYTHONPATH="$scion_share/tools"
+
             echo " * Ensure availability of the 'gen-cache' directory, required by SQLite"
             mkdir --verbose --parents gen-cache
 
             echo " * Install topology/tiny4.topo"
-            install --mode 644 --target-directory topology -D ${pkgs.scion.src}/topology/tiny4.topo
+            install --mode 644 --target-directory topology -D "$scion_share/topology/tiny4.topo"
 
-            echo ' * Install tools/docker-ip'
-            install --mode 755 --target-directory tools -D ${pkgs.scion.src}/tools/docker-ip
-            sed --in-place tools/docker-ip             \
-                --expression=s,^#!/bin/bash,#!/bin/sh, \
+            echo ' * Generate topology'
+            python3 "$scion_share/tools/topogen.py" -c topology/tiny4.topo
 
-            echo ' * Generate topology files on ./gen'
-            export DOCKER_IF=lo              # to appease tools/docker-ip when docker is not available
-            export PYTHONDONTWRITEBYTECODE=1 # don't try to write .pyc files
-            export PYTHONPATH="${pkgs.scion.src}/tools"
-            python3 "${pkgs.scion.src}/tools/topogen.py" -c topology/tiny4.topo
-
-            echo ' * Update paths to SCION components on gen/supervisord.conf'
-            sed --in-place gen/supervisord.conf                 \
-                --expression=s,bin/daemon,scion-daemon,         \
-                --expression=s,bin/dispatcher,scion-dispatcher, \
-                --expression=s,bin/control,scion-control,       \
-                --expression=s,bin/router,scion-router,
-
-            echo ' * Install tools/supervisord.conf'
-            echo " * Disable unavailable plugin 'wildcards' on tools/supervisord.conf"
-            awk '
-                /^\[ctlplugin:wildcards\]/ {
-                    print "; forge: disable wildcards plugin (currently unavailable on Nixpkgs)"
-                    comment = 1
-                }
-                comment && /^$/ { comment = 0 }
-                comment         { print ";" $0; next }
-                1
-            ' ${pkgs.scion.src}/tools/supervisord.conf > tools/supervisord.conf
-
-            echo ' * Install tools/supervisor.sh'
-            install --mode 755 --target-directory tools -D ${pkgs.scion.src}/tools/supervisor.sh
-
-            echo ' * Update paths on tools/supervisord.sh'
-            sed --in-place tools/supervisor.sh                  \
-                --expression=s,^#!/bin/bash,#!/bin/sh,          \
-                --expression=s,bin/supervisorctl,supervisorctl, \
-                --expression=s,bin/supervisord,supervisord,
+            echo ' * Install tools/supervisord.conf and tools/supervisor.sh'
+            install --mode 644 --target-directory tools -D "$scion_share/tools/supervisord.conf"
+            install --mode 755 --target-directory tools -D "$scion_share/tools/supervisor.sh"
           '';
         })
       ];
