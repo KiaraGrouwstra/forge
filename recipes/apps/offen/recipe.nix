@@ -69,6 +69,21 @@ in
           OFFEN_DATABASE_DIALECT = "sqlite3";
           OFFEN_DATABASE_CONNECTIONSTRING = "/var/lib/offen/offen.db";
         };
+
+        healthcheck = {
+          enable = true;
+          test = [
+            "curl"
+            "-fs"
+            "http://offen:3000/healthz"
+          ];
+          packages = [ pkgs.curl ];
+          interval = "3s";
+          timeout = "3s";
+          startPeriod = "10s";
+          retries = 10;
+        };
+
         resources.web-proxy = {
           role = "frontend";
           ports = [ "8080:8080" ];
