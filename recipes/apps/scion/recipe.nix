@@ -62,11 +62,8 @@ in
       > [!CAUTION]
       > This is a complex project, and the example below is only for testing purposes.
 
-      #### Running SCION Locally
-
-      Quoting the
-      [upstream documentation](https://docs.scion.org/en/v0.15.1/dev/run.html#running-scion-locally)
-      verbatim:
+      From the
+      [upstream documentation](https://docs.scion.org/en/v0.15.1/dev/run.html#running-scion-locally):
 
       > _SCION is an Internet architecture and SCION networks are composed of
       > many hosts running the SCION control-plane services, routers, and
@@ -90,9 +87,10 @@ in
       [Quickstart](https://docs.scion.org/en/v0.15.1/dev/run.html#quickstart)
       instructions provided in the SCION docs.
 
+      #### Running SCION locally
 
-      0. [Launch the shell environment](app/${app.name}#run-shell)
-      containing `${app.name}` and create and enter an empty working directory
+      0. [First, launch the shell environment](app/${app.name}#run-shell)
+      containing `${app.name}` and create an empty working directory
 
       ```bash
       mkdir scion && cd scion
@@ -125,18 +123,6 @@ in
       as1-ff00_0_112:cs1-ff00_0_112-1: started
       as1-ff00_0_112:sd1-ff00_0_112: started
       ```
-
-      or you can run `tools/supervisor.sh` interactively:
-
-      ```bash
-      tools/supervisor.sh
-      ```
-
-      and issue commands at the prompt, e.g.:
-
-      `start all`, `stop all`, `tail -f <process_id>`, ...
-
-      Note that you can autocomplete commands by pressing `<Tab>`.
 
       3. Check connectivity
 
@@ -176,9 +162,6 @@ in
       rtt min/avg/max/mdev = 0.635/0.918/1.123/0.139 ms
       ```
 
-      When you are satisfied, you can now shut down the whole system, as
-      explained in the following final steps:
-
       4. Stop all running SCION services
 
       ```bash
@@ -191,7 +174,7 @@ in
       tools/supervisor.sh shutdown
       ```
 
-      #### Resources
+      #### Additional resources
 
       ##### Presentation by the original creator
 
@@ -200,11 +183,6 @@ in
       ##### References
 
       - <https://en.wikipedia.org/wiki/SCION_(Internet_architecture)>
-
-      ##### Documentation
-
-      - <https://www.scion.org>
-      - <https://apps.scion.org>
 
       ##### Open-Source implementation (this one)
 
@@ -224,21 +202,14 @@ in
 
       - <https://github.com/lschulz/pan-bindings>
 
-      ##### SCION-related packages available on Nixpkgs
+      ##### NixOS resources
 
       - <https://search.nixos.org/packages?channel=unstable&query=SCION>
-
-      ##### SCION-related options available on NixOS
-
       - <https://search.nixos.org/options?channel=unstable&query=SCION>
 
-      ##### SCION entry on NixOS Wiki
-
-      Outdated as of 2026-08-26 wrt. registration to SCIONLab, which is now
-      unavailable, but illustrative still.  See the note on
-      <https://www.scionlab.org>.
-
-      - <https://wiki.nixos.org/wiki/SCION>
+      - <https://wiki.nixos.org/wiki/SCION> - Outdated as of 2026-08-26 wrt.
+      registration to SCIONLab, which is now unavailable, but illustrative
+      still. See the note on <https://www.scionlab.org>.
 
     '';
 
