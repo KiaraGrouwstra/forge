@@ -13,8 +13,9 @@
     {
       checks = lib.concatMapAttrs (
         packageName: package:
-        # `apps` and `pkgs` are package sets (to support the .#apps.${name} syntax)
-        # not actual package, hence filter them out (they do not have a `drvPath` attribute).
+        # `apps` and `pkgs` are invalid dedivations
+        # used as package sets (to support the .#apps.${name} syntax)
+        # hence filter them out (they do not have a `drvPath` attribute).
         lib.optionalAttrs (lib.isDerivation package && lib.hasAttr "drvPath" package) (
           let
             subDrvs = [
