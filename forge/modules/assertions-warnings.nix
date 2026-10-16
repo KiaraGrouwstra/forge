@@ -22,6 +22,7 @@
         }
       );
       internal = true;
+      visible = false;
       default = [ ];
       description = ''
         Configuration assertions.
@@ -61,6 +62,7 @@
         }
       );
       internal = true;
+      visible = false;
       default = [ ];
       description = ''
         Configuration warnings.
