@@ -10,6 +10,9 @@
   specialArgs,
   ...
 }@args:
+let
+  enabledResources = app.services.result.enabledResources;
+in
 {
   options = {
     enable = lib.mkEnableOption "Container runtime";
@@ -265,7 +268,7 @@
         inherit tag stream;
         copyToArchive = tar: "${stream} 2>/dev/null > ${tar}";
       }
-    ) app.services.resources;
+    ) enabledResources;
 
     result.images = config.result.processImages // config.result.nixosImages;
 
@@ -273,12 +276,14 @@
       let
         componentNames = lib.attrNames app.services.components;
 
+        resourceNames = lib.attrNames enabledResources;
+
         resourceNamesByRole =
-          role: lib.attrNames (lib.filterAttrs (_: r: r.role == role) app.services.resources);
+          role: lib.attrNames (lib.filterAttrs (_: resource: resource.role == role) enabledResources);
 
         dependsOnCondition =
           depName:
-          if lib.hasAttr depName app.services.resources then
+          if lib.hasAttr depName enabledResources then
             "service_healthy"
           else if app.services.components.${depName}.healthcheck.enable then
             "service_healthy"
@@ -355,7 +360,7 @@
           stop_grace_period = "30s";
           labels = [ "ngi-forge.type=resource" ];
           healthcheck = resourceDefaultHealthcheck;
-        }) app.services.resources;
+        }) enabledResources;
 
         composeFile = pkgs.writeText "${app.name}-compose.yaml" (
           lib.generators.toYAML { } {
@@ -363,7 +368,7 @@
               resourcesComponents
               serviceComponents
             ];
-            volumes = lib.genAttrs' (componentNames ++ lib.attrNames app.services.resources) (
+            volumes = lib.genAttrs' (componentNames ++ resourceNames) (
               name: lib.nameValuePair "${name}-data" { }
             );
           }
