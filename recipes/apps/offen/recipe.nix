@@ -41,8 +41,6 @@ in
 
       Open the [web interface](http://localhost:8080) and log in as
       the operator using the account created in the previous step.
-
-      Read the [docs](${app.links.docs}) for more details.
     '';
 
     links = {
