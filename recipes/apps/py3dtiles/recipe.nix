@@ -13,13 +13,7 @@
   pkgs.python3-py3dtiles = {
     build.identityBuilder = {
       enable = true;
-      # TODO: remove once https://github.com/nixOS/nixpkgs/pull/563014 is available
-      # https://nixpkgs-tracker.ocfox.me/?pr=563014
-      derivation = pkgs.pkgsOriginal.python3.pkgs.py3dtiles.override {
-        ifcopenshell = pkgs.python3Packages.callPackage ../../_nixpkgs/ifcopenshell {
-          inherit (pkgs) cgal_5 libxml2;
-        };
-      };
+      derivation = pkgs.pkgsOriginal.python3.pkgs.py3dtiles;
     };
   };
 
