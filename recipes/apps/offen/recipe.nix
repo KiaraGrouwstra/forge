@@ -41,8 +41,6 @@ in
 
       Open the [web interface](http://localhost:8080) and log in as
       the operator using the account created in the previous step.
-
-      Read the [docs](${app.links.docs}) for more details.
     '';
 
     links = {
@@ -84,7 +82,7 @@ in
           retries = 10;
         };
 
-        resources.web-proxy = {
+        resources.reverse-proxy = {
           role = "frontend";
           ports = [ "8080:8080" ];
           nixosConfig = {
