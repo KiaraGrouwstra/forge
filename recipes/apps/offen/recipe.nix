@@ -84,7 +84,7 @@ in
           retries = 10;
         };
 
-        resources.web-proxy = {
+        resources.reverse-proxy = {
           role = "frontend";
           ports = [ "8080:8080" ];
           nixosConfig = {
