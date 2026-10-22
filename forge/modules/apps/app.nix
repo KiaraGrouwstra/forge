@@ -13,8 +13,8 @@
     enable = lib.mkOption {
       type = lib.types.bool;
       default = specialArgs.enable;
-      defaultText = "forge.enable";
-      description = "Whether to enable the app in flake's `packages` and `checks`.";
+      defaultText = lib.literalExpression "config.forge.enable";
+      description = "Whether to publish the app in Forge repository in Flake output.";
     };
     name = lib.mkOption {
       default = name;
