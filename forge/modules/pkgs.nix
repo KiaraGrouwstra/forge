@@ -48,14 +48,6 @@
   # Config section is now provided by builder modules
   config =
     let
-      # Process warnings: filter to get active warnings (condition = true), then show them
-      activeWarnings = lib.filter (x: x.condition) config.warnings;
-      showWarnings = lib.foldr (w: acc: lib.warn w.message acc) true activeWarnings;
-
-      # Process assertions: filter to get failed assertions (condition = false)
-      failedAssertions = lib.filter (x: !x.condition) config.assertions;
-      assertionMessages = lib.concatMapStringsSep "\n" (x: "- ${x.message}") failedAssertions;
-
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "pkgs";
         derivations = lib.mapAttrs (packageName: package: package.result.derivation) (
@@ -81,10 +73,8 @@
       ];
 
       # Evaluation check: show warnings first, then throw on failed assertions
-      _module.check =
-        if showWarnings then
-          if failedAssertions != [ ] then throw "\nFailed assertions:\n${assertionMessages}" else true
-        else
-          true;
+      _module.check = import ./check-assertions-warnings.nix { inherit lib; } {
+        inherit (config) assertions warnings;
+      } true;
     };
 }

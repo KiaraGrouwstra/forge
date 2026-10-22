@@ -52,15 +52,6 @@
       );
       default = { };
       description = "Per-component container runtime configuration.";
-      apply =
-        self:
-        let
-          knownComponents = lib.attrNames app.services.components;
-          unknownComponents = lib.subtractLists knownComponents (lib.attrNames self);
-        in
-        lib.throwIf (unknownComponents != [ ])
-          "services.runtimes.container.components: unknown component(s): ${lib.concatStringsSep ", " unknownComponents}. Must be one of: ${lib.concatStringsSep ", " knownComponents}"
-          self;
     };
 
     resources = lib.mkOption {
@@ -90,17 +81,6 @@
       );
       default = { };
       description = "Per-resource container runtime NixOS configuration.";
-      apply =
-        self:
-        let
-          knownResources = lib.concatMap (c: lib.attrNames c.resources) (
-            lib.attrValues app.services.components
-          );
-          unknownResources = lib.subtractLists knownResources (lib.attrNames self);
-        in
-        lib.throwIf (unknownResources != [ ])
-          "services.runtimes.container.resources: unknown resource(s): ${lib.concatStringsSep ", " unknownResources}. Must be one of: ${lib.concatStringsSep ", " (lib.unique knownResources)}"
-          self;
     };
 
     result = {
