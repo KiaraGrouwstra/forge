@@ -310,22 +310,11 @@
         type = lib.types.package;
         internal = true;
         description = "Resulting derivation of the package.";
-      };
-
-      checkedDerivation = lib.mkOption {
-        type = lib.types.package;
-        internal = true;
-        readOnly = true;
         # Warnings and assertions are checked only when the package is
         # evaluated, to not slow down evaluation of other flake outputs.
-        default = forge-lib.checkAssertionsWarnings {
+        apply = forge-lib.checkAssertionsWarnings {
           inherit (config) assertions warnings;
-        } config.result.derivation;
-        defaultText = lib.literalExpression "config.result.derivation";
-        description = ''
-          Resulting derivation of the package, after showing package warnings
-          and checking package assertions.
-        '';
+        };
       };
     };
   };

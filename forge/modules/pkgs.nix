@@ -49,7 +49,7 @@
     let
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "pkgs";
-        derivations = lib.mapAttrs (packageName: package: package.result.checkedDerivation) (
+        derivations = lib.mapAttrs (packageName: package: package.result.derivation) (
           lib.filterAttrs (_: pkg: !pkg.broken && pkg.enable) config.forge.pkgs
         );
       }) { };
