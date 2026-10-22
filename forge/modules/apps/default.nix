@@ -111,14 +111,13 @@
           );
         };
 
-      checkAssertionsWarnings = import ../check-assertions-warnings.nix { inherit lib; };
-
       enabledApps = lib.filterAttrs (_: app: !app.broken && app.enable) config.forge.apps;
 
       # App warnings and assertions are checked only when the app is evaluated,
       # to not slow down evaluation of other flake outputs.
       bundledApps = lib.mapAttrs (
-        appName: app: checkAssertionsWarnings { inherit (app) assertions warnings; } (shellBundle app)
+        appName: app:
+        forge-lib.checkAssertionsWarnings { inherit (app) assertions warnings; } (shellBundle app)
       ) enabledApps;
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "apps";

@@ -22,7 +22,7 @@
         pkgs = pkgs.extend (
           finalPkgs: previousPkgs:
           # Extend `pkgs` with the packages from the forge.
-          lib.mapAttrs (packageName: package: package.result.derivation) config.forge.pkgs
+          lib.mapAttrs (packageName: package: package.result.checkedDerivation) config.forge.pkgs
           // {
             # `pkgs.pkgsOriginal` provides packages from the original `pkgs` (usually from Nixpkgs)
             # Eg. `pkgs.pkgsOriginal.offen` (Nixpkgs) and `pkgs.offen` (ngi-forge).

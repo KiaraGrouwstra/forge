@@ -8,7 +8,6 @@
 }:
 {
   imports = [
-    ./assertions-warnings.nix
     ./builders/shared
   ];
 
@@ -50,31 +49,12 @@
     let
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "pkgs";
-        derivations = lib.mapAttrs (packageName: package: package.result.derivation) (
+        derivations = lib.mapAttrs (packageName: package: package.result.checkedDerivation) (
           lib.filterAttrs (_: pkg: !pkg.broken && pkg.enable) config.forge.pkgs
         );
       }) { };
     in
     {
       inherit (packagesWithNamespace) packages;
-
-      # Collect warnings from forge.pkgs
-      warnings = lib.pipe config.forge.pkgs [
-        (lib.attrValues)
-        (map (x: x.warnings))
-        (lib.flatten)
-      ];
-
-      # Collect assertions from forge.pkgs
-      assertions = lib.pipe config.forge.pkgs [
-        (lib.attrValues)
-        (map (x: x.assertions))
-        (lib.flatten)
-      ];
-
-      # Evaluation check: show warnings first, then throw on failed assertions
-      _module.check = import ./check-assertions-warnings.nix { inherit lib; } {
-        inherit (config) assertions warnings;
-      } true;
     };
 }
