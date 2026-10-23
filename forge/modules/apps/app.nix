@@ -7,7 +7,10 @@
   ...
 }:
 {
-  imports = [ ../recipe-metadata.nix ];
+  imports = [
+    ../assertions-warnings.nix
+    ../recipe-metadata.nix
+  ];
   config._recipeType = "apps";
   options = {
     enable = lib.mkOption {
@@ -261,5 +264,70 @@
           ]
         ] config.services.components;
       };
+
+    assertions =
+      let
+        prettyPrint = lib.generators.toPretty { multiline = false; };
+
+        components = config.services.components;
+        componentNames = lib.attrNames components;
+        resourceNames = lib.unique (
+          lib.concatMap (component: lib.attrNames component.resources) (lib.attrValues components)
+        );
+
+        containerRuntime = config.services.runtimes.container;
+        unknownContainerComponents = lib.subtractLists componentNames (
+          lib.attrNames containerRuntime.components
+        );
+        unknownContainerResources = lib.subtractLists resourceNames (
+          lib.attrNames containerRuntime.resources
+        );
+
+        programRuntime = config.programs.runtimes.program;
+        mainPackage = config.programs.mainPackage;
+      in
+      lib.mapAttrsToList (
+        componentName: component:
+        let
+          unknownDependsOn = lib.subtractLists componentNames component.dependsOn;
+        in
+        {
+          condition = unknownDependsOn == [ ];
+          message = ''
+            App '${config.name}': services.components.${componentName}.dependsOn references unknown components: ${prettyPrint unknownDependsOn}.
+            Available components: ${prettyPrint componentNames}.
+          '';
+        }
+      ) components
+      ++ [
+        {
+          condition = unknownContainerComponents == [ ];
+          message = ''
+            App '${config.name}': services.runtimes.container.components references unknown components: ${prettyPrint unknownContainerComponents}.
+            Available components: ${prettyPrint componentNames}.
+          '';
+        }
+        {
+          condition = unknownContainerResources == [ ];
+          message = ''
+            App '${config.name}': services.runtimes.container.resources references unknown resources: ${prettyPrint unknownContainerResources}.
+            Available resources: ${prettyPrint resourceNames}.
+          '';
+        }
+        {
+          condition = programRuntime.enable -> mainPackage != null;
+          message = ''
+            App '${config.name}': programs.runtimes.program.enable requires programs.mainPackage to be set.
+          '';
+        }
+        {
+          condition =
+            (programRuntime.enable && mainPackage != null)
+            -> lib.hasAttrByPath [ "meta" "mainProgram" ] mainPackage;
+          message = ''
+            App '${config.name}': programs.mainPackage is missing the meta.mainProgram attribute.
+          '';
+        }
+      ];
   };
 }

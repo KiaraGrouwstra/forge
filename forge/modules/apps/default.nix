@@ -97,14 +97,9 @@
           };
         }
         // lib.optionalAttrs app.programs.runtimes.program.enable {
-          check-programs-main-package =
-            assert
-              (app.programs.mainPackage != null)
-              || throw "${app.name} has runtimes.program.enable but programs.mainPackage is missing";
-            assert
-              (lib.hasAttrByPath [ "meta" "mainProgram" ] app.programs.mainPackage)
-              || throw "${app.name}'s programs.mainPackage is missing a meta.mainProgram attribute";
-            app.programs.mainPackage;
+          # The `programs.mainPackage` checks are app assertions (see `app.nix`),
+          # which run whenever the app is evaluated.
+          check-programs-main-package = app.programs.mainPackage;
         }
         // tests
         // {
@@ -116,23 +111,36 @@
           );
         };
 
-      bundledApps = lib.mapAttrs (appName: app: shellBundle app) (
-        lib.filterAttrs (_: app: !app.broken && app.enable) config.forge.apps
-      );
+      enabledApps = lib.filterAttrs (_: app: !app.broken && app.enable) config.forge.apps;
+
+      # App warnings and assertions are checked only when the app is evaluated,
+      # to not slow down evaluation of other flake outputs.
+      bundledApps = lib.mapAttrs (
+        appName: app:
+        forge-lib.checkAssertionsWarnings { inherit (app) assertions warnings; } (shellBundle app)
+      ) enabledApps;
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "apps";
         derivations = bundledApps;
       }) { };
     in
     {
+      # Output names are computed from the app configuration, not from
+      # `bundledApps`, to avoid evaluating every app when accessing `packages`.
       packages =
         packagesWithNamespace.packages
         // lib.concatMapAttrs (
-          appName: bundled:
-          { }
-          // lib.optionalAttrs (bundled ? container) { "apps.${appName}.container" = bundled.container; }
-          // lib.optionalAttrs (bundled ? program) { "apps.${appName}.program" = bundled.program; }
-          // lib.optionalAttrs (bundled ? vm) { "apps.${appName}.vm" = bundled.vm; }
-        ) bundledApps;
+          appName: app:
+          let
+            bundled = bundledApps.${appName};
+          in
+          lib.optionalAttrs app.services.runtimes.container.enable {
+            "apps.${appName}.container" = bundled.container;
+          }
+          // lib.optionalAttrs app.programs.runtimes.program.enable {
+            "apps.${appName}.program" = bundled.program;
+          }
+          // lib.optionalAttrs app.services.runtimes.nixos.enable { "apps.${appName}.vm" = bundled.vm; }
+        ) enabledApps;
     };
 }

@@ -8,7 +8,6 @@
 }:
 {
   imports = [
-    ./assertions-warnings.nix
     ./builders/shared
   ];
 
@@ -48,14 +47,6 @@
   # Config section is now provided by builder modules
   config =
     let
-      # Process warnings: filter to get active warnings (condition = true), then show them
-      activeWarnings = lib.filter (x: x.condition) config.warnings;
-      showWarnings = lib.foldr (w: acc: lib.warn w.message acc) true activeWarnings;
-
-      # Process assertions: filter to get failed assertions (condition = false)
-      failedAssertions = lib.filter (x: !x.condition) config.assertions;
-      assertionMessages = lib.concatMapStringsSep "\n" (x: "- ${x.message}") failedAssertions;
-
       packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
         namespace = "pkgs";
         derivations = lib.mapAttrs (packageName: package: package.result.derivation) (
@@ -65,26 +56,5 @@
     in
     {
       inherit (packagesWithNamespace) packages;
-
-      # Collect warnings from forge.pkgs
-      warnings = lib.pipe config.forge.pkgs [
-        (lib.attrValues)
-        (map (x: x.warnings))
-        (lib.flatten)
-      ];
-
-      # Collect assertions from forge.pkgs
-      assertions = lib.pipe config.forge.pkgs [
-        (lib.attrValues)
-        (map (x: x.assertions))
-        (lib.flatten)
-      ];
-
-      # Evaluation check: show warnings first, then throw on failed assertions
-      _module.check =
-        if showWarnings then
-          if failedAssertions != [ ] then throw "\nFailed assertions:\n${assertionMessages}" else true
-        else
-          true;
     };
 }

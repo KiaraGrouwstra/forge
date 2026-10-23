@@ -1,5 +1,6 @@
 {
   lib,
+  forge-lib,
   name,
   specialArgs,
   config,
@@ -308,6 +309,11 @@
         type = lib.types.package;
         internal = true;
         description = "Resulting derivation of the package.";
+        # Warnings and assertions are checked only when the package is
+        # evaluated, to not slow down evaluation of other flake outputs.
+        apply = forge-lib.checkAssertionsWarnings {
+          inherit (config) assertions warnings;
+        };
       };
     };
   };
