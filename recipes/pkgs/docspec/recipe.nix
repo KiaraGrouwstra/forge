@@ -28,6 +28,14 @@
           cacert
         ];
       };
+      extraAttrs = {
+        postPatch = ''
+          substituteInPlace crates/docspec-blocknote-writer/tests/writer.rs \
+            --replace-fail \
+            'out of range integral type conversion attempted' \
+            'number too large to fit in target type'
+        '';
+      };
     };
 
     test.script = ''

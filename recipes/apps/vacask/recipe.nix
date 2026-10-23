@@ -12,6 +12,13 @@ let
 in
 
 {
+  pkgs.vacask = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.vacask;
+    };
+  };
+
   apps.vacask = {
     displayName = "VACASK";
     description = "Analog circuit simulator.";
@@ -77,31 +84,5 @@ in
       vacask --help | grep -q "This is vacask ${pkgs.vacask.version}"
       vacask ${app.data.testOp.path}
     '';
-  };
-
-  pkgs.vacask = {
-    build.identityBuilder = {
-      enable = true;
-      # TODO: remove when this is merged and propagated
-      # https://github.com/NixOS/nixpkgs/pull/554242
-      derivation = pkgs.pkgsOriginal.vacask.overrideAttrs (oldAttrs: {
-        cmakeFlags = oldAttrs.cmakeFlags ++ [
-          (lib.cmakeFeature "OPENVAF_OPTIONS" "--target_cpu ${
-            with pkgs.stdenv.hostPlatform;
-            if isx86_64 then
-              if avx512Support then
-                "x86-64-v4"
-              else if avx2Support then
-                "x86-64-v3"
-              else if sse4_2Support then
-                "x86-64-v2"
-              else
-                "x86-64"
-            else
-              "generic"
-          } ")
-        ];
-      });
-    };
   };
 }

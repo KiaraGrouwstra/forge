@@ -25,11 +25,22 @@
         pkgs.libusb1
         pkgs.libz
       ]
-      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.systemd ];
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.udev ];
     };
 
     build.extraAttrs = {
       dontBuild = true;
+
+      # Pre-built binaries crash if stripped
+      dontStrip = true;
+      # Disable Nix's default patching to prevent breaking the binary
+      dontPatchELF = true;
+
+      # Espressif binaries require 2MB page size (2097152 bytes) or they crash on launch
+      patchelfFlags = [
+        "--page-size"
+        "2097152"
+      ];
 
       installPhase = ''
         mkdir -p $out
