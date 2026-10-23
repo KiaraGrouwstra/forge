@@ -6,6 +6,14 @@
 }:
 let
   recipe = config.pkgs.bids;
+  typecode = pkgs.python3Packages.typecode.overridePythonAttrs (old: {
+    # TODO remove once https://github.com/NixOS/nixpkgs/pull/577741 is available
+    disabledTests = (old.disabledTests or [ ]) ++ [
+      # fails due to change in file (libmagic) 5.48
+      "test_archive_squashfs_lzo"
+      "test_archive_squashfs_xz"
+    ];
+  });
 in
 {
   pkgs.bids = {
