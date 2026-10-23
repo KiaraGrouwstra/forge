@@ -65,7 +65,6 @@
     };
     homePage = lib.mkOption {
       type = lib.types.strMatching "[a-zA-Z][a-zA-Z0-9+\-.]*://[^ \t\n]+";
-      default = "";
       description = "Package home page URL.";
       example = "https://www.gnu.org/software/hello/";
     };
