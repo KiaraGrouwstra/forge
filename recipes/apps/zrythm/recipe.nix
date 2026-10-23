@@ -10,7 +10,13 @@ in
   pkgs.zrythm = {
     build.identityBuilder = {
       enable = true;
+      # TODO: remove preFixup override once https://github.com/NixOS/nixpkgs/pull/570791 is in nixos-unstable
       derivation = pkgs.pkgsOriginal.zrythm.overrideAttrs (old: {
+        preFixup = ''
+          gappsWrapperArgs+=(
+            --prefix GSETTINGS_SCHEMA_DIR : "$out/share/gsettings-schemas/${old.pname}-${old.version}/glib-2.0/schemas/"
+          )
+        '';
         meta = old.meta // {
           mainProgram = "zrythm";
         };
