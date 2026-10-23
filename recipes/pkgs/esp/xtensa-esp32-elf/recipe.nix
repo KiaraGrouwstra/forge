@@ -29,7 +29,17 @@
 
     build.extraAttrs = {
       dontBuild = true;
+
+      # Pre-built binaries crash if stripped
       dontStrip = true;
+      # Disable Nix's default patching to prevent breaking the binary
+      dontPatchELF = true;
+
+      # Espressif binaries require 2MB page size (2097152 bytes) or they crash on launch
+      patchelfFlags = [
+        "--page-size"
+        "2097152"
+      ];
 
       autoPatchelfIgnoreMissingDeps = [
         "libpython2.7.so.1.0"
