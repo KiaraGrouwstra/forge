@@ -7,7 +7,8 @@
   pkgs.repath-studio = {
     build.identityBuilder = {
       enable = true;
-      derivation = pkgs.pkgsOriginal.repath-studio;
+      # TODO remove once https://github.com/NixOS/nixpkgs/pull/578613 is available
+      derivation = pkgs.callPackage ../../_nixpkgs/repath-studio/package.nix { };
     };
   };
 
