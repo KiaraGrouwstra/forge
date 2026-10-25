@@ -27,6 +27,12 @@ in
   apps.datalab = {
     displayName = "DataLab";
     description = "Open-source Platform for Scientific and Technical Data Processing and Visualization.";
+    screenshotSources.urls = [
+      "https://raw.githubusercontent.com/DataLab-Platform/DataLab/main/doc/images/DataLab-Screenshot-Signal.png"
+      "https://raw.githubusercontent.com/DataLab-Platform/DataLab/main/doc/images/DataLab-Screenshot-Image.png"
+      "https://raw.githubusercontent.com/DataLab-Platform/DataLab/main/doc/images/shots/i_blob_detection_flower.en.png"
+      "https://raw.githubusercontent.com/DataLab-Platform/DataLab/main/doc/images/DataLab-Screenshot-Theme.png"
+    ];
     usage = ''
       DataLab is an open-source platform for scientific signal and image processing and visualization.
       It can be used as a standalone application, embedded in your own software, or remote-controlled via its XML-RPC API.
