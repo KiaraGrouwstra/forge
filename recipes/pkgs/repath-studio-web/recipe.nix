@@ -13,7 +13,7 @@
 
     source = {
       git = "github:repath-studio/repath-studio/v${pkgs.repath-studio.version}";
-      hash = "sha256-uHGF/SEbKZF6Ax1yrXYoAjXH5k6PzKF4aB85TXGJvk4=";
+      hash = "sha256-Jjx5vz7k6koSftw3oPHHAWVjwz+wZ1Jdc3cLZcmbjHI=";
     };
 
     build.standardBuilder = {
