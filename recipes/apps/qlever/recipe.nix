@@ -23,8 +23,8 @@
     description = "Web-based user interface for QLever SPARQL engine.";
     screenshotSources.urls = [
       {
-        url = "https://raw.githubusercontent.com/ad-freiburg/qlever-ui/master/docs/screenshot.png";
-        caption = "QLever UI";
+        url = "https://raw.githubusercontent.com/qlever-dev/qlever-ui/master/docs/screenshot.png";
+        caption = "SPARQL query editor with context-sensitive suggestions";
       }
     ];
     usage = ''
