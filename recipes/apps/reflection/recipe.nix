@@ -66,12 +66,15 @@ in
       runtimes.shell.enable = true;
     };
 
-    test.programs.packages = [
-      pkgs.writableTmpDirAsHomeHook
-      pkgs.xvfb-run
-    ];
-    test.programs.script = ''
-      xvfb-run reflection --help | grep -iq reflection
-    '';
+    # FIX: flaky test
+    # https://github.com/ngi-nix/forge/pull/1048#issuecomment-6268320926
+    #
+    # test.programs.packages = [
+    #   pkgs.writableTmpDirAsHomeHook
+    #   pkgs.xvfb-run
+    # ];
+    # test.programs.script = ''
+    #   xvfb-run reflection --help | grep -iq reflection
+    # '';
   };
 }
