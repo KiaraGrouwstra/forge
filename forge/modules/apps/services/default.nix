@@ -1,7 +1,6 @@
 {
   config,
   specialArgs,
-
   lib,
   ...
 }:
@@ -18,8 +17,7 @@
       description = ''
         Services components.
 
-        Each component must have `process.command` set and can optionally
-        declare one or more `resources` providing NixOS configuration.
+        Each component must have `process.command` set.
       '';
       apply =
         self:
@@ -54,11 +52,13 @@
     };
 
     resources = lib.mkOption {
-      internal = true;
-      visible = false;
       type = lib.types.attrsOf (lib.types.submodule ./resource.nix);
       default = { };
-      description = "Resource configuration";
+      description = ''
+        Resource configuration.
+
+        Resources are shared by all service components.
+      '';
       example = lib.literalExpression ''
         {
           database.nixosConfig = { services.postgresql.enable = true; };
@@ -66,16 +66,13 @@
         }
       '';
     };
+
+    result.enabledResources = lib.mkOption {
+      internal = true;
+      readOnly = true;
+      type = lib.types.raw;
+      default = lib.filterAttrs (_: resource: resource.enable) config.resources;
+      description = "Enabled resources, by name.";
+    };
   };
-
-  config.resources =
-    let
-      componentResources = lib.pipe config.components [
-        (lib.attrValues)
-        (lib.catAttrs "resources")
-      ];
-
-      runtimeResources = [ config.runtimes.container.resources ];
-    in
-    lib.mkMerge (runtimeResources ++ componentResources);
 }

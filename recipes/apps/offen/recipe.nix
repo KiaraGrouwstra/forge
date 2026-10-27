@@ -81,24 +81,24 @@ in
           startPeriod = "10s";
           retries = 10;
         };
+      };
 
-        resources.reverse-proxy = {
-          role = "frontend";
-          ports = [ "8080:8080" ];
-          nixosConfig = {
-            services.nginx = {
-              enable = true;
-              recommendedProxySettings = true;
-              virtualHosts.offen = {
-                default = true;
-                listen = [
-                  {
-                    addr = "0.0.0.0";
-                    port = 8080;
-                  }
-                ];
-                locations."/".proxyPass = "http://offen:3000";
-              };
+      resources.reverse-proxy = {
+        role = "frontend";
+        ports = [ "8080:8080" ];
+        nixosConfig = {
+          services.nginx = {
+            enable = true;
+            recommendedProxySettings = true;
+            virtualHosts.offen = {
+              default = true;
+              listen = [
+                {
+                  addr = "0.0.0.0";
+                  port = 8080;
+                }
+              ];
+              locations."/".proxyPass = "http://offen:3000";
             };
           };
         };

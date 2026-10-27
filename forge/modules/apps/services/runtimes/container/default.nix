@@ -10,6 +10,9 @@
   specialArgs,
   ...
 }@args:
+let
+  enabledResources = app.services.result.enabledResources;
+in
 {
   options = {
     enable = lib.mkEnableOption "Container runtime";
@@ -208,6 +211,7 @@
           inherit system;
           modules = [
             (resource.nixosConfig)
+            (config.resources.${name}.nixosConfig or { })
             (pkgs.path + "/nixos/modules/profiles/minimal.nix")
             {
               boot.isContainer = true;
@@ -264,33 +268,22 @@
         inherit tag stream;
         copyToArchive = tar: "${stream} 2>/dev/null > ${tar}";
       }
-    ) app.services.resources;
+    ) enabledResources;
 
     result.images = config.result.processImages // config.result.nixosImages;
 
     result.build =
       let
-        # Collect frontend resources and the components that declare them as such.
-        # Result: { <resource-name> = [ <component-name> ... ]; }
-        # Frontend resources start after these components so that upstream
-        # hostnames are registered in the container network DNS before the
-        # resource process (e.g. nginx) performs its startup checks.
-        frontendResourceDeps = lib.foldlAttrs (
-          acc: cname: comp:
-          lib.foldlAttrs (
-            acc2: rname: r:
-            if r.role == "frontend" then acc2 // { ${rname} = (acc2.${rname} or [ ]) ++ [ cname ]; } else acc2
-          ) acc comp.resources
-        ) { } app.services.components;
+        componentNames = lib.attrNames app.services.components;
 
-        # Backend resources start before components — components depend on them.
-        backendResourceNames = lib.filter (rname: !(lib.hasAttr rname frontendResourceDeps)) (
-          lib.attrNames app.services.resources
-        );
+        resourceNames = lib.attrNames enabledResources;
+
+        resourceNamesByRole =
+          role: lib.attrNames (lib.filterAttrs (_: resource: resource.role == role) enabledResources);
 
         dependsOnCondition =
           depName:
-          if lib.hasAttr depName app.services.resources then
+          if lib.hasAttr depName enabledResources then
             "service_healthy"
           else if app.services.components.${depName}.healthcheck.enable then
             "service_healthy"
@@ -302,7 +295,8 @@
           {
             image = "localhost/${app.name}-${name}:${config.result.images.${name}.tag}";
             ports = service.process.ports;
-            depends_on = lib.genAttrs (service.dependsOn ++ backendResourceNames) (depName: {
+            # Backend resources start before components, components depend on them.
+            depends_on = lib.genAttrs (service.dependsOn ++ resourceNamesByRole "backend") (depName: {
               condition = dependsOnCondition depName;
             });
             tmpfs = [
@@ -348,8 +342,11 @@
         resourcesComponents = lib.mapAttrs (name: resource: {
           image = "localhost/${app.name}-${name}:${config.result.images.${name}.tag}";
           ports = resource.ports;
-          depends_on = lib.optionalAttrs (lib.hasAttr name frontendResourceDeps) (
-            lib.genAttrs frontendResourceDeps.${name} (depName: {
+          # Frontend resources start after all components so that upstream
+          # hostnames are registered in the container network DNS before the
+          # resource process (e.g. nginx) performs its startup checks.
+          depends_on = lib.optionalAttrs (resource.role == "frontend") (
+            lib.genAttrs componentNames (depName: {
               condition = dependsOnCondition depName;
             })
           );
@@ -363,7 +360,7 @@
           stop_grace_period = "30s";
           labels = [ "ngi-forge.type=resource" ];
           healthcheck = resourceDefaultHealthcheck;
-        }) app.services.resources;
+        }) enabledResources;
 
         composeFile = pkgs.writeText "${app.name}-compose.yaml" (
           lib.generators.toYAML { } {
@@ -371,9 +368,9 @@
               resourcesComponents
               serviceComponents
             ];
-            volumes =
-              lib.mapAttrs' (name: _: lib.nameValuePair "${name}-data" { }) app.services.components
-              // lib.mapAttrs' (name: _: lib.nameValuePair "${name}-data" { }) app.services.resources;
+            volumes = lib.genAttrs' (componentNames ++ resourceNames) (
+              name: lib.nameValuePair "${name}-data" { }
+            );
           }
         );
 

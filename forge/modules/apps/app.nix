@@ -271,9 +271,10 @@
 
         components = config.services.components;
         componentNames = lib.attrNames components;
-        resourceNames = lib.unique (
-          lib.concatMap (component: lib.attrNames component.resources) (lib.attrValues components)
-        );
+        resourceNames = lib.attrNames config.services.resources;
+        # Components and resources share the same namespace (container names,
+        # volumes, images and hostnames), their names must not clash.
+        clashingNames = lib.intersectLists resourceNames componentNames;
 
         containerRuntime = config.services.runtimes.container;
         unknownContainerComponents = lib.subtractLists componentNames (
@@ -300,6 +301,13 @@
         }
       ) components
       ++ [
+        {
+          condition = clashingNames == [ ];
+          message = ''
+            App '${config.name}': services.resources names clash with services.components names: ${prettyPrint clashingNames}.
+            Resources and components must have unique names.
+          '';
+        }
         {
           condition = unknownContainerComponents == [ ];
           message = ''
