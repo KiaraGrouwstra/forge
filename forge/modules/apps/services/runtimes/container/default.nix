@@ -194,11 +194,11 @@ in
           PATH = binPaths;
         };
         settings.bubblewrap.prependFlags = [ "--clearenv" ];
-        settings.bubblewrap.chdir = "/var/lib/${serviceName}";
+        settings.bubblewrap.chdir = service.process.stateDir;
         settings.bubblewrap.unshare.user = false;
         settings.bubblewrap.appendFlags = [
           "--dir"
-          "/var/lib/${serviceName}"
+          service.process.stateDir
         ];
         imports = [ { inherit (config.result.modules.${serviceName}) services settings; } ];
       }
