@@ -266,6 +266,14 @@ highlightjs-code pre {
   transform: scale(1.03);
 }
 
+/* Align non-square icons with the left edge of the page content. On small
+   screens the icon is centered above the app name. */
+@media (min-width: 576px) {
+  .item-header-icon {
+    object-position: left center;
+  }
+}
+
 /* Hide the annoying border around search bar that bootstrap adds */
 .form-control:focus {
   box-shadow: none !important;

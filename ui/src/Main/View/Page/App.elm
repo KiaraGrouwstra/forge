@@ -54,13 +54,14 @@ viewPageAppHeader _ pageApp =
         onClickIcon =
             Route_App { routeApp | routeApp_iconShown = True }
     in
+    -- On small screens, center the app icon, the app name and the buttons
+    -- under each other.
     div
-        [ class "d-flex justify-content-between align-items-center gap-3"
+        [ class "d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3"
         , class "my-4 mb-4"
         ]
         [ div
-            [ style "display" "flex"
-            , style "align-items" "center"
+            [ class "d-flex flex-column flex-sm-row align-items-center text-center text-sm-start"
             , style "gap" "16px"
             ]
             [ (if pageApp.pageApp_app.app_hasIcon then
@@ -92,8 +93,7 @@ viewPageAppHeader _ pageApp =
                 [ text pageApp.pageApp_app.app_displayName
                 ]
             ]
-        , -- On small screens, show the Deploy button under the Run button.
-          div [ class "d-flex flex-column flex-sm-row gap-2" ]
+        , div [ class "d-flex gap-2" ]
             ([ button
                 [ class "btn"
                 , attribute "data-testid" "app-run-button"
