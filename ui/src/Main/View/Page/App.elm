@@ -55,9 +55,7 @@ viewPageAppHeader _ pageApp =
             Route_App { routeApp | routeApp_iconShown = True }
     in
     div
-        [ style "display" "flex"
-        , style "justify-content" "space-between"
-        , style "align-items" "center"
+        [ class "d-flex justify-content-between align-items-center gap-3"
         , class "my-4 mb-4"
         ]
         [ div
@@ -94,7 +92,8 @@ viewPageAppHeader _ pageApp =
                 [ text pageApp.pageApp_app.app_displayName
                 ]
             ]
-        , div [ style "display" "flex", style "gap" "8px" ]
+        , -- On small screens, show the Deploy button under the Run button.
+          div [ class "d-flex flex-column flex-sm-row gap-2" ]
             ([ button
                 [ class "btn"
                 , attribute "data-testid" "app-run-button"
