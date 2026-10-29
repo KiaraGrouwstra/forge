@@ -164,7 +164,17 @@ viewAppsFilters model pageApps =
                             , label = label
                             , count = apps |> List.filter (\app -> List.member category app.app_categories) |> List.length
                             , active = List.member category route.routeApps_categories
-                            , update = reRoute { route | routeApps_categories = toggle category route.routeApps_categories }
+                            , update =
+                                -- Only one category is selected at a time.
+                                reRoute
+                                    { route
+                                        | routeApps_categories =
+                                            if List.member category route.routeApps_categories then
+                                                []
+
+                                            else
+                                                [ category ]
+                                    }
                             }
                     )
 

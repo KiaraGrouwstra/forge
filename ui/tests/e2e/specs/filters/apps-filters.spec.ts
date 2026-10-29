@@ -20,6 +20,16 @@ test.describe("Apps filters", () => {
     await expect(page).not.toHaveURL(/[?&]c=/);
   });
 
+  test("a category button replaces the selected category", async ({ page }) => {
+    await page.goto(`./?c=${TEST_APP_CATEGORY}`);
+
+    const other = TEST_APP_CATEGORY === "security" ? "chat" : "security";
+    await page.getByTestId(`apps-filter-category-${other}`).click();
+    await expect(page.getByTestId(`apps-filter-category-${other}`)).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId(`apps-filter-category-${TEST_APP_CATEGORY}`)).toHaveAttribute("aria-pressed", "false");
+    await expect(page).toHaveURL(new RegExp(`[?&]c=${other}(&|$)`));
+  });
+
   test("the category filter keeps apps in that category", async ({ page }) => {
     await page.goto(`./apps?q=${TEST_APP_SEARCH}&c=${TEST_APP_CATEGORY}`);
     await expect(testApp(page)).toBeVisible();
