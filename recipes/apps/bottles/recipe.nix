@@ -5,6 +5,15 @@
 }:
 
 {
+  pkgs.bottles = {
+    # TODO needs unfree packages https://github.com/ngi-nix/forge/pull/1043#issuecomment-6348128062
+    broken = true;
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.bottles;
+    };
+  };
+
   apps.bottles = {
     displayName = "Bottles";
     description = "Easy-to-use wineprefix manager.";
