@@ -7,6 +7,13 @@ let
   recipe = config.apps.authlib;
 in
 {
+  pkgs.python3-authlib = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.python3.pkgs.authlib;
+    };
+  };
+
   apps.authlib = {
     displayName = "Authlib";
     description = "The ultimate Python library in building OAuth and OpenID Connect servers. JWS, JWK, JWA, JWT are included.";

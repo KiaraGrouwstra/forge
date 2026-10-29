@@ -3,6 +3,13 @@
   ...
 }:
 {
+  pkgs.bluetuith = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.bluetuith;
+    };
+  };
+
   apps.bluetuith = {
     description = "bluetuith is a TUI-based bluetooth connection manager, which can interact with bluetooth adapters and devices.";
     usage = ''

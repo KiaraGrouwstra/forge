@@ -4,6 +4,13 @@
 }:
 
 {
+  pkgs.comaps = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.comaps;
+    };
+  };
+
   apps.comaps = {
     displayName = "CoMaps";
     description = "A community-led fork of Organic Maps focused on free and open navigation with privacy.";

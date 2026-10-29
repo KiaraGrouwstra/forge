@@ -3,6 +3,13 @@
   ...
 }:
 {
+  pkgs.texlyre = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.texlyre;
+    };
+  };
+
   apps.texlyre = {
     displayName = "Texlyre";
     description = "Local-first real-time LaTeX and Typst collaboration platform with offline editing capabilities.";

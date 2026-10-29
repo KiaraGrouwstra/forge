@@ -4,6 +4,13 @@
 }:
 
 {
+  pkgs.surfer = {
+    build.identityBuilder = {
+      enable = true;
+      derivation = pkgs.pkgsOriginal.surfer;
+    };
+  };
+
   apps.surfer = {
     displayName = "Surfer Waveform Viewer";
     description = "A waveform viewer with a focus on a snappy usable interface, and extensibility.";
