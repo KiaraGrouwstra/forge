@@ -6,22 +6,22 @@
   apps.nyxt.screenshots = lib.mkDefault [
     {
       url = "https://nyxt-browser.com/static/image/switch-buffer.png";
-      hash = "sha256-ahKK2keDBBkn7hz1IVWr7QK9acw95i3DGhGiU1RedQc=";
+      hash = "sha256-szawmTERxyoiyMHje9xiNxQXMiVT8xUvuN0KwXAL12A=";
       caption = "Fast tab switching";
     }
     {
       url = "https://nyxt-browser.com/static/image/multi-select.png";
-      hash = "sha256-B7oLgrFoZcLXtdW0rYa+a7Pypplj9vY0wZOoRoQl27U=";
+      hash = "sha256-taLX2d92ag8hw3TaxSZJrro5p/ElfPXaFv5lpDYgjkc=";
       caption = "Multiple marking";
     }
     {
       url = "https://nyxt-browser.com/static/image/bookmark.png";
-      hash = "sha256-ppf+sXVleYuHpQLwC162nScVNow1Bt4+YdAehlbUcAA=";
+      hash = "sha256-hwZ0vwZ0e7Xa2S4oEbypBZjFf9TEGRgD00Bx5fVAaGQ=";
       caption = "Powerful bookmarks";
     }
     {
       url = "https://nyxt-browser.com/static/image/multi-search.png";
-      hash = "sha256-LrCEimGJrJxTQfcmfi/T/4u1bNMOjloYai6rX7sHXG0=";
+      hash = "sha256-vHaJcAsR3TxVdH4Kl2RxAJoD/Q5JhUaaEoyJKg3kvdk=";
       caption = "Multi tab search";
     }
     {
